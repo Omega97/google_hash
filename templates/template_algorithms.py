@@ -1,9 +1,9 @@
 """algorithms"""
-from google_hash.utils import PercentageBar
-from basic.sets import Set
+from utils import PercentageBar
+from omar_utils.basic.sets import Set
 from random import shuffle, randrange
 # local imports
-from google_hash.templates.template_solution import Solution
+from templates.template_solution import Solution
 
 
 def alg_1(photos: list) -> list:  # generates

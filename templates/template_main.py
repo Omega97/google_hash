@@ -1,9 +1,9 @@
 """ Google Hash 2019-q """
-from basic.file_basics import file_to_list
-from basic.tensors import split_tensor
-from basic.sets import Set
+from omar_utils.basic.file_basics import file_to_list
+from omar_utils.basic.tensors import split_tensor
+from omar_utils.basic.sets import Set
 # local imports
-from google_hash.templates.template_solution import Solution
+from templates.template_solution import Solution
 # from google_hash.templates.template_algorithms import ...
 
 
@@ -41,8 +41,8 @@ data_sets = {i: data_generator(names[i]) for i in names}
 
 if __name__ == '__main__':
 
-    from google_hash.utils import save_solution, build_final_alg, fancy_print
-    from tests.timer import Timer
+    from utils import save_solution, build_final_alg, fancy_print
+    from omar_utils.tests.timer import Timer
 
     # 3) load the data ----------------------------------------------------------
 

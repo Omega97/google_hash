@@ -1,10 +1,10 @@
 """ Google Hash 2019-q """
-from basic.file_basics import file_to_list
-from basic.tensors import split_tensor
-from basic.sets import Set
+from omar_utils.basic.file_basics import file_to_list
+from omar_utils.basic.tensors import split_tensor
+from omar_utils.basic.sets import Set
 # local imports
-from google_hash.example.sample_solution import SlideShow
-from google_hash.example.sample_algorithms import group_photos, group_slides
+from example.sample_solution import SlideShow
+from example.sample_algorithms import group_photos, group_slides
 
 
 # 1) data generator -------------------------------------------------------------

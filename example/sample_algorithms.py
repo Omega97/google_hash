@@ -1,9 +1,9 @@
 """algorithms"""
-from google_hash.utils import PercentageBar
-from basic.sets import Set
+from utils import PercentageBar
+from omar_utils.basic.sets import Set
 from random import shuffle, randrange
 # local imports
-from google_hash.example.sample_solution import SlideShow
+from example.sample_solution import SlideShow
 
 
 def group_photos(photos: list) -> list:  # generates random solution

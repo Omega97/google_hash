@@ -1,7 +1,7 @@
 """ Google Hash 2019-q """
 
 # local imports
-from google_hash.example.sample_algorithms import *
+from google_hash.templates.template_algorithms import *
 from google_hash.api import Api
 
 

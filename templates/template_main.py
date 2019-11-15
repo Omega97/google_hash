@@ -1,66 +1,89 @@
 """ Google Hash 2019-q """
-from omar_utils.basic.file_basics import file_to_list
-from omar_utils.basic.tensors import split_tensor
-from omar_utils.basic.sets import Set
+
 # local imports
-from templates.template_solution import Solution
-# from google_hash.templates.template_algorithms import ...
+from google_hash.example.sample_algorithms import *
+from google_hash.api import Api
 
 
-# 1) data generator -------------------------------------------------------------
+# --- 0) Define data structures -------------------------------------------------
+
+def data_structures():
+    """this method is not actually used, just write data structures as variables or comments"""
+
+    # raw input:
+    ...
+
+    # problem (data-points):
+    ...
+
+    # solution:
+    ...
+
+    # raw output:
+    ...
 
 
-def data_generator(name):
-    """:returns a method that returns data when called"""
-    def custom_file_import(first=0, last=None):
-        """import data of the problem from file"""
-        def improve(w):
-            """modify a row of data"""
-            ...
-        v = file_to_list(name + '.txt')[max(1, first):last]
-        v = split_tensor(v)
-        return [improve(i) for i in v]
-    return custom_file_import
+# --- 1) write file names -------------------------------------------------------
+
+file_names = {'a': 'problems/....txt',
+              'b': '...',
+              ...: ...}
 
 
-# 2) write file names and define data-set generators ----------------------------
+# --- 2) clean your data --------------------------------------------------------
 
-names = {'a': 'problems/a_example',
-         'b': 'problems/b_...',
-         'c': 'problems/c_...',
-         'd': 'problems/d_...',
-         'e': 'problems/e_...'}
-
-
-# initialize data only when called
-data_sets = {i: data_generator(names[i]) for i in names}
+def cleaning_method(s: str) -> list:
+    """convert a line of data into something useful
+    """
+    ...
 
 
-# -------------------------------------------------------------------------------
+# --- 3) define data-set ---------------------------------------------
 
+problem_index = 'a'  # pick from names
+first_line = 1  # ignore lines before first_line
+last_line = -1  # ignore lines after last (-1 to not ignore)
+
+
+# --- 4) representation method --------------------------------------
+
+def repr_method(solution):
+    """
+    string to use when printing solution
+    :param solution: list of slides
+    :return: str
+    """
+    ...
+
+
+# --- 5) score method (optional) --------------------------------------
+
+def score_method(solution, problem):    # optional
+    """
+    calc score of solution (based on problem)
+    """
+    ...
+
+
+# --- 6) pick algorithm --------------------------------------
+
+algorithm = example_a
+
+
+# --- 7) init, compile and set-up API ----------------------------------
+
+API = Api()
+API.compile(file_names=file_names,
+            cleaning_method=cleaning_method,
+            problem_index=problem_index,
+            algorithm=algorithm,
+            repr_method=repr_method,
+            score_method=score_method)
+API.settings(first_line=first_line,
+             last_line=last_line)
+
+
+# --- 8) activate API ----------------------------------
 
 if __name__ == '__main__':
-
-    from utils import save_solution, build_final_alg, fancy_print
-    from omar_utils.tests.timer import Timer
-
-    # 3) load the data ----------------------------------------------------------
-
-    timer = Timer()
-    Name = 'a'
-    p = data_sets[Name](last=100)
-    fancy_print(p, title='Problem ' + Name)
-    timer('loading\n')
-
-    # 4) build final algorithm --------------------------------------------------
-
-    alg = build_final_alg(Solution, ...)
-
-    # 5) compute solution -------------------------------------------------------
-
-    sol = alg(p)
-    timer()
-    print('\nscore =', sol.get_score(), '\n')
-    # print('\nSolution\n\n%s\n' % str(sol))
-    fancy_print(sol, title='Solution')
-    save_solution(sol, name=Name)
+    API.activate()

@@ -1,17 +1,24 @@
 """algorithms"""
-from utils import PercentageBar
-from omar_utils.basic.sets import Set
-from random import shuffle, randrange
-# local imports
-from templates.template_solution import Solution
 
 
-def alg_1(photos: list) -> list:  # generates
-    """all horizontal photos get coupled together"""
+# --- 1) Algorithms -------------------------------------------------------
+
+
+def example_a(_):
     ...
 
 
-def alg_2(photos: list, slides: list) -> list:
-    """find best match for each slide"""
+def alg_1(problem):
     ...
 
+
+# --- 2) Test -------------------------------------------------------
+
+if __name__ == '__main__':
+    from google_hash.example.sample_main import API
+
+    # re-configure API
+    API.set_problem('a')
+    API.set_last_line(-1)
+    API.set_algorithm(example_a)
+    API.activate()

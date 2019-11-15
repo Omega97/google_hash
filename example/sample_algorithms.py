@@ -1,44 +1,87 @@
 """algorithms"""
-from utils import PercentageBar
-from omar_utils.basic.sets import Set
-from random import shuffle, randrange
-# local imports
-from example.sample_solution import SlideShow
+from numpy import argmax
 
 
-def group_photos(photos: list) -> list:  # generates random solution
-    """all horizontal photos get coupled together"""
-    print('\n Computing solution...\n')
-    hor = [i for i in range(len(photos)) if photos[i][0] == 'H']
-    ver = [i for i in range(len(photos)) if photos[i][0] == 'V']
-    out = [[i] for i in hor]
-    for i in range(len(ver) // 2):
-        out += [[ver[i * 2], ver[i * 2 + 1]]]
-    shuffle(out)
+# --- 0) Data structures -------------------------------------------------
+
+def data_structures():
+    """this method is not actually used"""
+
+    # problem:
+    _ = [
+        ['H', 3, {'cat', 'beach', 'sun'}],
+        ['V', 2, {'selfie', 'smile'}],
+        ...]
+
+    # solution:
+    _ = \
+        [[0], [3], [1, 2], ...]
+
+
+# --- 1) Algorithms -------------------------------------------------------
+
+
+def example_a(_):
+    return [[0], [3], [1, 2]]
+
+
+def alg_1(problem):
+    out = []
+    v = []
+    for i in range(len(problem)):
+        if problem[i][0] == 'H':
+            out += [[i]]
+        else:
+            v += [i]
+            if len(v) == 2:
+                out += [v]
+                v = []
     return out
 
 
-def group_slides(k=20):
-    """generates the algorithm"""
-    def f(photos: list, slides: list) -> list:
-        """find best match for each slide"""
-        bar = PercentageBar(length=20)
-        slides_ = Set(*slides, fast=True)
-        output = [slides_[0]]
-        slides_ -= slides_[0]
-        while len(slides_):
-            # pick k random (available) slides
-            if k >= len(slides_):
-                sub_set = slides_
+def alg_2(size=10):
+    def wrapper(problem):
+        def local_score(slide1, slide2):
+            tags1 = sum([problem[j][-1] for j in slide1])  # sum the tags of all the photos
+            tags2 = sum([problem[j][-1] for j in slide2])  # sum the tags of all the photos
+            a = len(tags1 & tags2)  # A & B
+            b = len(tags1 - tags2)  # A - B
+            c = len(tags2 - tags1)  # B - A
+            return min(a, b, c)
+
+        def pick_best_and_drop(collection_, out_):
+            if len(out):
+                scores = [local_score(out_[-1], j) for j in collection_]
+                best = int(argmax(scores))
             else:
-                sub_set = Set(slides_[0], fast=True)
-                for _ in range(k):
-                    sub_set += slides_[randrange(0, len(slides_))]
-            # scores of last slide + possible next slides
-            scores = [SlideShow([output[-1]] + [i], photos).get_score() for i in sub_set.elements]
-            best = sub_set.elements[scores.index(max(scores))]
-            output += [best]
-            slides_ -= best
-            bar(1-len(slides_) / len(slides))
-        return output
-    return f
+                best = 0
+            out_.append(collection[best])
+            collection_ = collection_[:best] + collection_[best + 1:]
+            return collection_, out_
+
+        # group photos into slides
+        sol0 = alg_1(problem)
+        out = []
+        collection = []     # list of slides
+
+        for i in sol0:
+            collection.append(i)
+            if len(collection) > size:
+                collection, out = pick_best_and_drop(collection, out)
+        while len(collection):
+            collection, out = pick_best_and_drop(collection, out)
+
+        return out
+    return wrapper
+
+
+# --- 2) Test -------------------------------------------------------
+
+if __name__ == '__main__':
+    from google_hash.example.sample_main import API
+
+    # re-configure API
+    API.set_problem('b')
+    API.set_last_line(-1)
+    API.set_algorithm(alg_2(size=5))
+    API.activate()

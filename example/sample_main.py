@@ -6,7 +6,7 @@ from google_hash.example.sample_algorithms import *
 from google_hash.api import Api
 
 
-# --- 0) Define data structures -------------------------------------------------
+# --- 0) Define data structures ----------------------------------
 
 def data_structures():
     """this method is not actually used"""
@@ -35,7 +35,7 @@ def data_structures():
     ...
 
 
-# --- 1) write file names -------------------------------------------------------
+# --- 1) write file names ----------------------------------------
 
 file_names = {'a': 'problems/a_example.txt',
               'b': 'problems/b_lovely_landscapes.txt',
@@ -44,7 +44,7 @@ file_names = {'a': 'problems/a_example.txt',
               'e': 'problems/e_shiny_selfies.txt'}
 
 
-# --- 2) clean your data --------------------------------------------------------
+# --- 2) clean your data -----------------------------------------
 
 def cleaning_method(s: str) -> list:
     """convert a line of data into something useful
@@ -55,14 +55,7 @@ def cleaning_method(s: str) -> list:
     return [v[0], v[1], Set(*v[2:])]
 
 
-# --- 3) define data-set ---------------------------------------------
-
-problem_index = 'a'  # pick from names
-first_line = 2  # ignore lines before first_line
-last_line = -1  # ignore lines after last (-1 to not ignore)
-
-
-# --- 4) representation method --------------------------------------
+# --- 3) representation method -----------------------------------
 
 def repr_method(solution):
     """
@@ -74,7 +67,7 @@ def repr_method(solution):
                      [' '.join([str(j) for j in i]) for i in solution])
 
 
-# --- 5) score method (optional) --------------------------------------
+# --- 4) score method (optional) ---------------------------------
 
 def score_method(solution, problem):
     """
@@ -102,12 +95,21 @@ def score_method(solution, problem):
     return pt
 
 
-# --- 6) pick algorithm --------------------------------------
+# --- 5) pick algorithm & define data-set ------------------------
 
+# algorithm
 algorithm = example_a
 
+# data-set
+problem_index = 'a'  # pick from names
+first_line = 2  # ignore lines before first_line
+last_line = -1  # ignore lines after last (-1 to not ignore)
 
-# --- 7) init, compile and set-up API ----------------------------------
+
+# ----------------------------------------------------------------
+
+
+# --- automatic init, compile and set-up API ---------------------
 
 API = Api()
 API.compile(file_names=file_names,
@@ -120,7 +122,7 @@ API.settings(first_line=first_line,
              last_line=last_line)
 
 
-# --- 8) activate API ----------------------------------
+# --- automatic API activation -----------------------------------
 
 if __name__ == '__main__':
-    API.activate()
+    API.run()

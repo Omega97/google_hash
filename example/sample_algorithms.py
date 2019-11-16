@@ -2,7 +2,7 @@
 from numpy import argmax
 
 
-# --- 0) Data structures -------------------------------------------------
+# --- 0) Data structures -----------------------------------------
 
 def data_structures():
     """this method is not actually used"""
@@ -18,8 +18,7 @@ def data_structures():
         [[0], [3], [1, 2], ...]
 
 
-# --- 1) Algorithms -------------------------------------------------------
-
+# --- 1) Algorithms ----------------------------------------------
 
 def example_a(_):
     return [[0], [3], [1, 2]]
@@ -75,13 +74,20 @@ def alg_2(size=10):
     return wrapper
 
 
-# --- 2) Test -------------------------------------------------------
-
 if __name__ == '__main__':
     from google_hash.example.sample_main import API
 
-    # re-configure API
-    API.set_problem('b')
-    API.set_last_line(-1)
-    API.set_algorithm(alg_2(size=5))
-    API.activate()
+    # --- 2) Settings ------------------------------------------------
+
+    problem_tag = 'a'
+    data_length = -1
+    algorithm = alg_2(size=5)
+
+    # ----------------------------------------------------------------
+
+    # --- automatic API re-configuration -----------------------------
+
+    API.set_problem(problem_tag)
+    API.set_last_line(data_length)
+    API.set_algorithm(algorithm)
+    API.run()

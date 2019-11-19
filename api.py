@@ -1,18 +1,16 @@
+"""Google Hash Application Programming Interface"""
 from omar_utils.tests.timer import Timer
 from omar_utils.basic.file_basics import file_reader
+# local imports
 from google_hash.utils import fancy_print
 from google_hash.solution_class import Solution
 
 
 class Api:
-    """Application Programming Interface"""
-
     def __init__(self):
         self.names = None
         self.cleaning_method = None
         self.problem_index = None
-        self.do_save_solution = None
-        self.do_show = None
         self.first_line = None
         self.last_line = None
         self.algorithm = None
@@ -21,21 +19,43 @@ class Api:
         self.data_sets = None
         self.problem = None
         self.solution = None
+        self.do_save_solution = True
+        self.do_show = True
+        self.do_report = False
+        self.do_report_time = True
 
-    def compile(self, file_names, cleaning_method, problem_index, algorithm, repr_method, score_method=None):
-        self.names = file_names
-        self.cleaning_method = cleaning_method
-        self.problem_index = problem_index
-        self.algorithm = algorithm
-        self.repr_method = repr_method
-        self.score_method = score_method
+    def set(self, attribute, value):
+        """override attribute, only if value is not None"""
+        if value is not None:
+            if hasattr(self, attribute):
+                setattr(self, attribute, value)
+
+    def report(self, *args):
+        if self.do_report:
+            print('\n>>> ', ' '.join([str(i) for i in args]), '\n')
+
+    def report_time(self, *args):
+        if self.do_report_time:
+            print('\n>>> ', ' '.join([str(i) for i in args]), '\n')
+
+    def compile(self, file_names=None, cleaning_method=None, problem_index=None,
+                algorithm=None, repr_method=None, score_method=None):
+        """set main methods"""
+        self.set('names', file_names)
+        self.set('cleaning_method', cleaning_method)
+        self.set('problem_index', problem_index)
+        self.set('algorithm', algorithm)
+        self.set('repr_method', repr_method)
+        self.set('score_method', score_method)
         return self
 
-    def settings(self, first_line=0, last_line=-1, do_save_solution=True, do_show=True):
-        self.first_line = first_line
-        self.last_line = last_line
-        self.do_save_solution = do_save_solution
-        self.do_show = do_show
+    def settings(self, first_line=0, last_line=-1, do_save_solution=True, do_show=True, do_report=False):
+        """set main variables"""
+        self.set('first_line', first_line)
+        self.set('last_line', last_line)
+        self.set('do_save_solution', do_save_solution)
+        self.set('do_show', do_show)
+        self.set('do_report', do_report)
         return self
 
     def set_algorithm(self, algorithm):
@@ -53,51 +73,117 @@ class Api:
     def set_do_show(self, do_show):
         self.do_show = do_show
 
-    def gen_data_sets(self):  # todo simplify
+    # --- checks ------------------------------------------------------------------------
+
+    def check_defined(self, *args, error_type=None):
+        """checks that both args and kwargs are both not None, in witch case raises error_type"""
+        if error_type is None:
+            error_type = NotImplementedError
+        for attr in args:
+            if hasattr(self, attr):
+                if getattr(self, attr) is None:
+                    raise error_type(attr)
+            else:
+                raise AttributeError(attr)
+
+    def optional(*args):
+        """decorated methods are skipped if some parameter is missing"""
+
+        def wrapped(fun):
+            def wrapped_2(self, *ag, **kw):
+                self.check_defined(*args, error_type=AssertionError)
+                return fun(self, *ag, **kw)
+
+            wrapped_2.__name__ = fun.__name__ + '_'
+            return wrapped_2
+
+        return wrapped
+
+    def compulsory(*args):
+        """decorated methods stop the routine execution if some parameter is missing"""
+
+        def wrapped(fun):
+            def wrapped_2(self, *ag, **kw):
+                self.check_defined(*args, error_type=NotImplementedError)
+                return fun(self, *ag, **kw)
+
+            wrapped_2.__name__ = fun.__name__ + '_'
+            return wrapped_2
+
+        return wrapped
+
+    # --- functions ------------------------------------------------------------------------
+
+    @compulsory('names', 'first_line', 'last_line', 'cleaning_method')
+    def gen_data_sets(self):
         """dict of names with corresponding data-set generator"""
         self.data_sets = {i: data_points_generator(file_name=self.names[i],
                                                    first_line=self.first_line,
                                                    last_line=self.last_line,
                                                    cleaning_method=self.cleaning_method) for i in self.names}
 
+    @compulsory('data_sets', 'problem_index')
     def define_problem(self):
-        timer = Timer()
         self.problem = list(self.data_sets[self.problem_index]())  # when called returns data generator
         if self.do_show:
             fancy_print(self.data_sets[self.problem_index](), lines=10, title='problem ' + self.problem_index)
-            timer('loading data')
 
-    def compute_solution(self):  # todo
+    @compulsory('problem', 'repr_method')
+    def compute_solution(self):
         # compute solution
-        timer = Timer()
         raw_solution = self.algorithm(self.problem)
-        if self.do_show:
-            timer('computing raw solution')
+        self.solution = Solution(raw_solution, self.problem, self.repr_method)
 
-        # convert solution to Solution
-        self.solution = Solution(raw_solution, self.problem, self.repr_method, self.score_method)
-        if self.do_show:
-            timer('solution')
-
+    @optional('solution', 'problem_index', 'score_method')
     def compute_score(self):
-        # compute score
-        timer = Timer()
+        self.solution.set_score_method(self.score_method)
         score = self.solution.get_score()
         if self.do_show:
             fancy_print(self.solution, lines=10, title='solution ' + self.problem_index)
             print('\nscore =', score, '\n')
-            timer('score')
 
+    @optional('problem_index')
     def save(self):
         if self.do_save_solution:
             self.solution.save(name=self.problem_index)
 
-    def activate(self):
-        self.gen_data_sets()
-        self.define_problem()
-        self.compute_solution()
-        self.compute_score()
-        self.save()
+    # --- routine ------------------------------------------------------------------------
+
+    def routine(self):
+        """generator of methods to execute
+                - enforces sequencing
+                - returns control to user to allow interleaving code"""
+        v = [self.gen_data_sets,
+             self.define_problem,
+             self.compute_solution,
+             self.compute_score,
+             self.save]
+
+        def routine_generator():
+            for method in v:
+                yield method
+
+        return routine_generator
+
+    def run(self):
+        """routine execution"""
+        for method in self.routine()():
+            timer = Timer()
+            try:
+                self.report('calling', method.__name__, '...')
+                method()
+            except NotImplementedError:  # handle compulsory methods
+                self.report('Method not implemented! ', method.__name__)
+                break
+            except AssertionError:  # handle optional methods
+                self.report('...skipping', method.__name__)
+                pass
+            finally:
+                if self.do_report_time:
+                    t = timer(method.__name__).lapse
+                    # report only meaningful time
+                    if t > 0.005:
+                        self.report_time(str(timer))
 
 
 def data_points_generator(file_name, first_line, last_line, cleaning_method=None):

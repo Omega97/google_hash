@@ -1,9 +1,7 @@
-""" Google Hash templates """
-try:
-    import omar_utils
-except ImportError:
-    raise(ImportError, 'Please download omar_utils at the following link:\nhttps://github.com/Omega97/omar_utils')
+"""         omar_utils
 
-
+3/10/2019
+Provides common and useful methods of all kinds
+"""
 __author__ = "Omar Cusma Fait"
-__version__ = "2.0.0"
+__version__ = "1.1.1"

@@ -2,23 +2,25 @@
 from omar_utils.tests.timer import Timer
 from omar_utils.basic.file_basics import file_reader
 # local imports
-from google_hash.utils import fancy_print
-from google_hash.solution_class import Solution
+from utils import fancy_print
+from solution_class import Solution
 
 
 class Api:
     def __init__(self):
+        # config
         self.names = None
         self.cleaning_method = None
         self.problem_index = None
-        self.first_line = None
-        self.last_line = None
         self.algorithm = None
         self.repr_method = None
         self.score_method = None
         self.data_sets = None
         self.problem = None
         self.solution = None
+        # settings
+        self.first_line = 0
+        self.last_line = -1
         self.do_save_solution = True
         self.do_show = True
         self.do_report = False
@@ -30,17 +32,17 @@ class Api:
             if hasattr(self, attribute):
                 setattr(self, attribute, value)
 
-    def report(self, *args):
+    def report(self, *args, inline=1):
         if self.do_report:
-            print('\n>>> ', ' '.join([str(i) for i in args]), '\n')
+            print('\n' * inline, '>>> ', ' '.join([str(i) for i in args]))
 
     def report_time(self, *args):
         if self.do_report_time:
-            print('\n>>> ', ' '.join([str(i) for i in args]), '\n')
+            print('\n', '>>> ', ' '.join([str(i) for i in args]))
 
     def compile(self, file_names=None, cleaning_method=None, problem_index=None,
                 algorithm=None, repr_method=None, score_method=None):
-        """set main methods"""
+        """set methods (None = don't change)"""
         self.set('names', file_names)
         self.set('cleaning_method', cleaning_method)
         self.set('problem_index', problem_index)
@@ -49,13 +51,15 @@ class Api:
         self.set('score_method', score_method)
         return self
 
-    def settings(self, first_line=0, last_line=-1, do_save_solution=True, do_show=True, do_report=False):
-        """set main variables"""
+    def settings(self, first_line=None, last_line=None, do_save_solution=None,
+                 do_show=None, do_report=None, do_report_time=None):
+        """set variables (None = don't change)"""
         self.set('first_line', first_line)
         self.set('last_line', last_line)
         self.set('do_save_solution', do_save_solution)
         self.set('do_show', do_show)
         self.set('do_report', do_report)
+        self.set('do_report_time', do_report_time)
         return self
 
     def set_algorithm(self, algorithm):
@@ -79,12 +83,24 @@ class Api:
         """checks that both args and kwargs are both not None, in witch case raises error_type"""
         if error_type is None:
             error_type = NotImplementedError
+        not_defined_attr = []
+        error = None
+        # scan
         for attr in args:
             if hasattr(self, attr):
                 if getattr(self, attr) is None:
-                    raise error_type(attr)
+                    not_defined_attr += [attr]
+                    error = error_type(attr)
             else:
-                raise AttributeError(attr)
+                not_defined_attr += [attr]
+                error = AttributeError(attr)
+        # report
+        if len(not_defined_attr):
+            self.report('Warning! Argument not defined:')
+            for attr in not_defined_attr:
+                self.report(' - ' + attr, inline=0)
+            if error:
+                raise error
 
     def optional(*args):
         """decorated methods are skipped if some parameter is missing"""
@@ -112,7 +128,7 @@ class Api:
 
         return wrapped
 
-    # --- functions ------------------------------------------------------------------------
+    # --- functionalities ---------------------------------------------------------------
 
     @compulsory('names', 'first_line', 'last_line', 'cleaning_method')
     def gen_data_sets(self):
@@ -128,7 +144,7 @@ class Api:
         if self.do_show:
             fancy_print(self.data_sets[self.problem_index](), lines=10, title='problem ' + self.problem_index)
 
-    @compulsory('problem', 'repr_method')
+    @compulsory('problem', 'repr_method', 'algorithm')
     def compute_solution(self):
         # compute solution
         raw_solution = self.algorithm(self.problem)
@@ -140,14 +156,14 @@ class Api:
         score = self.solution.get_score()
         if self.do_show:
             fancy_print(self.solution, lines=10, title='solution ' + self.problem_index)
-            print('\nscore =', score, '\n')
+            print('\n\tscore =', score, '\n')
 
     @optional('problem_index')
     def save(self):
         if self.do_save_solution:
             self.solution.save(name=self.problem_index)
 
-    # --- routine ------------------------------------------------------------------------
+    # --- routine -----------------------------------------------------------------------
 
     def routine(self):
         """generator of methods to execute
@@ -165,15 +181,22 @@ class Api:
 
         return routine_generator
 
-    def run(self):
-        """routine execution"""
+    def run(self, min_time=0.005):
+        """
+        routine execution
+        :param min_time: min time required that a method needs to take in order to report time (seconds)
+        :return:
+        """
+        self.report('running Api...')
+        successful = True
         for method in self.routine()():
             timer = Timer()
             try:
-                self.report('calling', method.__name__, '...')
+                self.report('calling "' + method.__name__ + '"')
                 method()
             except NotImplementedError:  # handle compulsory methods
-                self.report('Method not implemented! ', method.__name__)
+                self.report('routine aborted at "' + method.__name__ + '"')
+                successful = False
                 break
             except AssertionError:  # handle optional methods
                 self.report('...skipping', method.__name__)
@@ -182,8 +205,12 @@ class Api:
                 if self.do_report_time:
                     t = timer(method.__name__).lapse
                     # report only meaningful time
-                    if t > 0.005:
+                    if t > min_time:
                         self.report_time(str(timer))
+        if successful:
+            self.report('Api has been successfully executed!')
+        else:
+            self.report('Api has been shut down due to a lack of arguments!')
 
 
 def data_points_generator(file_name, first_line, last_line, cleaning_method=None):

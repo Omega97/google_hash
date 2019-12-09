@@ -47,11 +47,13 @@ drone_inventory = 'drone_inventory'
 
 
 def refined_data():
+    """generator of lists if int (from file)"""
     for i in raw_file_gen(files['a']):
         yield [int(j) for j in i.split(' ')]
 
 
 def info_dict():
+    """dict of all useful info of the problem"""
     out = {}
     data_gen = refined_data()
     values = next(data_gen)
@@ -73,6 +75,7 @@ INFO = info_dict()
 
 
 def gen_warehouses():
+    """generator of dicts of info about warehouses"""
     data_gen = refined_data()
     skip_gen(data_gen, 4)
     for i in range(INFO[n_warehouses]):
@@ -89,6 +92,7 @@ def gen_warehouses():
 
 
 def gen_orders():
+    """generator of dicts of info about orders"""
     data_gen = refined_data()
     skip_gen(data_gen, 4 + 2 * INFO[n_warehouses] + 1)
     for i in range(INFO[n_orders]):
@@ -135,6 +139,7 @@ def command_to_str(command):
 
 
 def drone(id_, inventory=None):
+    """dict of info about a drone"""
     if inventory is None:
         inventory = [0 for _ in range(INFO[n_product_types])]
     return {drone_id: id_, drone_inventory: inventory}
@@ -153,10 +158,12 @@ WAREHOUSES = [i for i in gen_warehouses()]
 
 
 def dist(v1, v2):
+    """Eucledian distance"""
     return sum((v1[i] - v2[i])**2 for i in range(2))**.5
 
 
 def flight_time(v1, v2):
+    """n turns of flight of a drone"""
     return ceil(dist(v1, v2))
 
 

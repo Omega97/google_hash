@@ -158,3 +158,20 @@ def dist(v1, v2):
 
 def flight_time(v1, v2):
     return ceil(dist(v1, v2))
+
+
+
+
+SOLUTION = [load(1, 2, 2, 1)]
+
+# --- SAVING
+
+
+def save_solution(commands):
+    text = str(len(commands)) + '\n'
+    for i in commands:
+        text += command_to_str(i) + '\n'
+    save(text)
+
+
+save_solution(SOLUTION)
